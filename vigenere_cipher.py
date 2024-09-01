@@ -59,14 +59,9 @@ class VigenereCipher:
         )
 
 
-# TEXT = input().strip()
-# KEY = input().strip()
-# OPERATION = input().strip()
-
-
-TEXT = 'AULA NO SABADO E BOM'
-KEY = 'SEGURO'
-OPERATION = 'c'
+TEXT = input().strip()
+KEY = input().strip()
+OPERATION = input().strip()
 
 print(
     VigenereCipher.cipher(TEXT, KEY)
