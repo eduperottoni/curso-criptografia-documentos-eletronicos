@@ -39,10 +39,6 @@ class VigenereCipher:
         secret_key_length = len(secret_key)
         final_text = ''
         for i, char in enumerate(original_text):
-            if char == ' ':
-                final_text += ' '
-                continue
-
             secret_key_shift = secret_key[(i % secret_key_length)]
             final_text += substitution_function(char, secret_key_shift)
 
@@ -63,9 +59,14 @@ class VigenereCipher:
         )
 
 
-TEXT = input().strip()
-KEY = input().strip()
-OPERATION = input().strip()
+# TEXT = input().strip()
+# KEY = input().strip()
+# OPERATION = input().strip()
+
+
+TEXT = 'AULA NO SABADO E BOM'
+KEY = 'SEGURO'
+OPERATION = 'c'
 
 print(
     VigenereCipher.cipher(TEXT, KEY)
