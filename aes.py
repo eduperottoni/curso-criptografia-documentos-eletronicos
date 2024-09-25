@@ -1,6 +1,4 @@
 """AES Wrapper implementation"""
-# import sys
-# sys.path.append('/home/edu/projects/curso-criptografia-documentos-eletronicos/venv/lib/python3.10/site-packages')
 
 import binascii
 from enum import Enum
@@ -13,20 +11,10 @@ KEYS_BY_SIZE = {
     "256": bytes.fromhex('637572736F63727970746F6772616679637572736F63727970746F6772616679')
 }
 
-
-class OperationMode(Enum):
-    """Enumerador de modos de operação possíveis para o AES"""
-    CBC = "CBC"
-    ECB = "ECB"
-    CFB = "CFB"
-    OFB = "OFB"
-    CTR = "CTR"
-
-
 class AESWrapper:
     """Wrapper que encapsula os métodos fornecidos pela biblioteca Cryptodome"""
     def __init__(self, key_size: str, mode: str):
-        self.cipher = AES.new(KEYS_BY_SIZE[key_size], getattr(AES, f"MODE_{OperationMode(mode).value}"))
+        self.cipher = AES.new(KEYS_BY_SIZE[key_size], getattr(AES, f"MODE_{mode}"))
 
     def encrypt(self, plaintext: str) -> str:
         """Cifra texto plano usando chave pré-definida"""
