@@ -12,7 +12,7 @@ class MillerRabin:
     def __init__(self):
         self.range_for_testing_a = range(2, 6)
 
-    def __factorize_by_2_powers(self, n: int) -> tuple[int, int]:
+    def __factorize_by_2_powers(self, n: int) -> 'tuple[int, int]':
         """Fatora um número par em potências de 2
         Escreve n (par) como [2^k * m]
 
@@ -43,7 +43,7 @@ class MillerRabin:
 
         return False
 
-    def test_for_many_a(self, n: int) -> list[tuple[int, bool]]:
+    def test_for_many_a(self, n: int) -> 'list[tuple[int, bool]]':
         """Retorna o resultado do teste de Miller-Rabin para valores de
         a definidos no atributo self.range_for_testing_a
 
@@ -85,5 +85,12 @@ INPUT = int(input())
 
 miller = MillerRabin()
 
+tests_results = miller.test_for_many_a(INPUT)
 
-print(miller.test_for_many_a(INPUT))
+# Formatando a saída
+is_prime = True
+for a, prime in tests_results:
+    print(f"Teste a={a} -> {'Provavelmente primo' if prime else 'Composto'}")
+    if not prime:
+        is_prime = False
+print(f"Resultado final: {INPUT} é {'provavelmente primo' if is_prime else 'composto'}")
