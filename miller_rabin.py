@@ -25,7 +25,27 @@ class MillerRabin:
             k += 1
         return (k, m)
 
-    def __test_is_prime(self, n: int, a: int, m: int, k: int) -> bool:
+    def __modular_power(self, base: int, exponent: int, module: int) -> 'int':
+        """Calcula exponenciação utilizando regras de aritmética modular
+        Isso deixa o cálculo mais eficiente
+        (base^exponent) % module => (base % module)^exponent
+
+        Args:
+            base: base da exponenciação
+            exponent: expoente inteiro
+            module: módulo em que será feito o cálculo
+        """
+
+        base %= module
+        result = 1
+        while exponent > 0:
+            if exponent % 2 == 1:
+                result = (result * base) % module
+            base = (base * base) % module
+            exponent //= 2
+        return result
+
+    def __test_is_prime(self, n: int, a: int, m: int, k: int) -> 'bool':
         """Aplica o teste de Miller-Rabin para um valor de a
 
         Args:
@@ -33,12 +53,21 @@ class MillerRabin:
             a = número "aleatório" para aplicação do teste (1 < a < n-1)
             m e k = vêm da expressão n-1 = 2^k * m
         """
-        # a^m mod n = 1 ?
-        if (a ** m) % n == 1:
+        if n == 2:
             return True
+        if n % 2 == 0:
+            return False 
+
+        # a^m mod n = 1 ?
+        x = self.__modular_power(a, m, n)
+
+        if x in (1, n-1):  # We already test here the case i = 0 of the loop below
+            return True
+
         # [a^(2^i*m)] mod n = n-1 p/ algum 0 < i < k?
-        for i in range(0, k):
-            if a ** (2**i*m) % n == n-1:
+        for _ in range(k - 1):
+            x = self.__modular_power(x, 2, n)
+            if x == n-1:
                 return True
 
         return False
@@ -62,10 +91,6 @@ class MillerRabin:
                     (5, True)
                 ]
         """
-        if n % 2 == 0:
-            raise ValueError(
-                f"{n} Deve ser ímpar! Um par certamente não é primo!"
-            )
 
         # Escrevendo n-1 como 2^k*m
         k, m = self.__factorize_by_2_powers(n-1)
