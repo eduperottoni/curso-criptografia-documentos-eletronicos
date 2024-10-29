@@ -2,6 +2,8 @@
 Implementação do modelo RSA fornecido no enunciado
 """
 
+from Cryptodome.PublicKey import RSA as rsa
+
 
 class RSA:
     """Classe que encapsula operações do algoritmo RSA"""
@@ -14,8 +16,7 @@ class RSA:
         :param public_exponent: Expoente público para geração da chave (padrão 65537).
         :return: Nenhum valor de retorno (None).
         """
-        self.private_key
-        self.public_key
+        self.private_key, self.public_key = None, None
         self.generate_keys(key_size, public_exponent)
 
     def generate_keys(self, key_size: int, public_exponent: int) -> None:
@@ -24,7 +25,10 @@ class RSA:
 
         :return: Nenhum valor de retorno (None).
         """
-        pass
+        key: rsa.RsaKey = rsa.generate(bits=key_size, e=public_exponent)
+
+        self.private_key = key
+        self.public_key = key.public_key()
 
     def encrypt_message(self, message: str, public_key) -> str:
         """
@@ -52,3 +56,6 @@ class RSA:
         :return: A chave pública em formato exportável (bytes).
         """
         pass
+
+
+algo = RSA()
