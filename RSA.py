@@ -1,8 +1,10 @@
 """
 Implementação do modelo RSA fornecido no enunciado
 """
+import base64
 
 from Cryptodome.PublicKey import RSA as rsa
+from Cryptodome.Cipher import PKCS1_OAEP
 
 
 class RSA:
@@ -18,6 +20,7 @@ class RSA:
         """
         self.private_key, self.public_key = None, None
         self.generate_keys(key_size, public_exponent)
+        self.cipher = PKCS1_OAEP.new(self.private_key)
 
     def generate_keys(self, key_size: int, public_exponent: int) -> None:
         """
@@ -30,7 +33,7 @@ class RSA:
         self.private_key = key
         self.public_key = key.public_key()
 
-    def encrypt_message(self, message: str, public_key) -> str:
+    def encrypt_message(self, message: str, public_key: rsa.RsaKey) -> str:
         """
         Criptografa uma mensagem utilizando a chave pública fornecida.
 
@@ -38,7 +41,9 @@ class RSA:
         :param public_key: A chave pública do destinatário que será usada para a criptografia.
         :return: A mensagem criptografada, codificada em base64.
         """
-        pass
+        cipher = PKCS1_OAEP.new(public_key)
+        ciphered = cipher.encrypt(message.encode())
+        return base64.b64encode(ciphered).decode()
 
     def decrypt_message(self, ciphertext: str) -> str:
         """
@@ -47,7 +52,9 @@ class RSA:
         :param ciphertext: A mensagem criptografada em formato base64.
         :return: A mensagem em texto plano, após ser descriptografada.
         """
-        pass
+        ciphertext = base64.b64decode(ciphertext)
+        deciphered = self.cipher.decrypt(ciphertext)
+        return deciphered.decode()
 
     def export_public_key(self) -> bytes:
         """
@@ -55,7 +62,4 @@ class RSA:
 
         :return: A chave pública em formato exportável (bytes).
         """
-        pass
-
-
-algo = RSA()
+        return self.public_key.export_key()  # exports in PEM format by default 
