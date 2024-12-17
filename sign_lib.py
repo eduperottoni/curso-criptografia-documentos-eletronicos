@@ -121,7 +121,8 @@ class ECDSA:
 
         :param curve: Nome da curva elíptica para geração da chave.
         """
-        pass
+        self.private_key = ECC.generate(curve=curve)
+        self.public_key = self.private_key.public_key()
 
     def sign_message(self, message: str) -> str:
         """
@@ -130,7 +131,9 @@ class ECDSA:
         :param message: A mensagem em texto simples a ser assinada.
         :return: Assinatura da mensagem codificada em base64.
         """
-        pass
+        msg_hash = SHA256.new(message.encode())
+        signed = DSS.new(self.private_key, 'fips-186-3').sign(msg_hash)
+        return b64encode(signed).decode()
 
     def verify_signature(self, message: str, signature: str, public_key: ECC.EccKey) -> bool:
         """
@@ -141,4 +144,10 @@ class ECDSA:
         :param public_key: A chave pública ECDSA do remetente.
         :return: True se a assinatura for válida, False caso contrário.
         """
-        pass
+        msg_hash = SHA256.new(message.encode())
+        signed = b64decode(signature)
+        try:
+            DSS.new(public_key, 'fips-186-3').verify(msg_hash, signed)
+            return True
+        except ValueError:
+            return False
