@@ -18,7 +18,7 @@ class AC:
         """
         Obtém tempos de validade do certificado
         """
-        not_before = datetime.now()
+        not_before = datetime.utcnow()
         not_after = not_before + timedelta(days=365)
         return (not_before, not_after)
 
@@ -32,17 +32,11 @@ class AC:
             state (str): O estado do certificado. 
             locality (str): A cidade ou endereco do certificado. 
             organization (str): O nome da CA. 
-
-        Returns:subject = issuer = x509.Name([
-            x509.NameAttribute(NameOID.COUNTRY_NAME, country),
-            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, state),
-            x509.NameAttribute(NameOID.LOCALITY_NAME, locality),
-            x509.NameAttribute(NameOID.ORGANIZATION_NAME, organization),
-            x509.NameAttribute(NameOID.COMMON_NAME, common_name)
-        ])
+        
+        Returns:
             tuple: O certificado X.509 autoassinado e sua chave privada.
         """
-        self.ca_private_key = rsa.generate_private_key(65537, 2048)
+        ca_private_key = rsa.generate_private_key(65537, 2048)
         not_before, not_after = self.__get_not_before_and_not_after()
 
         self.ca_name = subject = issuer = x509.Name([
@@ -53,12 +47,17 @@ class AC:
             x509.NameAttribute(NameOID.COMMON_NAME, common_name)
         ])
 
-        self.ca_certificate = x509.CertificateBuilder(issuer,
+        ca_certificate = x509.CertificateBuilder(issuer,
                                                       subject,
-                                                      self.ca_private_key.public_key(),
+                                                      ca_private_key.public_key(),
                                                       x509.random_serial_number(),
                                                       not_before,
-                                                      not_after).sign(self.ca_private_key, hashes.SHA256)
+                                                      not_after).sign(ca_private_key, hashes.SHA256())
+
+        self.ca_certificate = ca_certificate
+        self.ca_private_key = ca_private_key
+        return ca_certificate, ca_private_key
+        
 
     def issueEndCertificate(self, public_key, common_name, country, state, locality, organization):
         """
@@ -88,7 +87,7 @@ class AC:
                                        public_key,
                                        x509.random_serial_number(),
                                        not_before,
-                                       not_after).sign(self.ca_private_key, hashes.SHA256)
+                                       not_after).sign(self.ca_private_key, hashes.SHA256())
 
     def validateCertificate(self, cert):
         """
@@ -101,3 +100,7 @@ class AC:
         Returns:
             CryptoRSA.RsaKey or None: A chave publica do certificado, ou None se o certificado não for valido.
         """
+        certificate: x509.Certificate = cert
+        if certificate.not_valid_before < datetime.now():
+            return None
+        return certificate.public_key
