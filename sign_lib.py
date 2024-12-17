@@ -1,5 +1,4 @@
 from Cryptodome.PublicKey import RSA as CryptoRSA
-from Cryptodome.Cipher import PKCS1_OAEP as rsa_cipher
 from Cryptodome.PublicKey import DSA as CryptoDSA
 from Cryptodome.PublicKey import ECC
 from Cryptodome.Signature import pkcs1_15, DSS
@@ -36,9 +35,9 @@ class RSA:
         :param message: A mensagem em texto simples a ser assinada.
         :return: Assinatura da mensagem codificada em base64.
         """
-        cipher = rsa_cipher.new(self.private_key)
-        ciphered = cipher.encrypt(message.encode())
-        return b64encode(ciphered).decode()
+        message_hash = SHA256.new(message.encode())
+        signed = pkcs1_15.new(self.private_key).sign(message_hash)
+        return b64encode(signed).decode()
 
     def verify_signature(self, message: str, signature: str, public_key: CryptoRSA.RsaKey) -> bool:
         """
@@ -49,7 +48,12 @@ class RSA:
         :param public_key: A chave pública RSA do remetente.
         :return: True se a assinatura for válida, False caso contrário.
         """
-        pass
+        signed = b64decode(signature)
+        try:
+            pkcs1_15.new(public_key).verify(SHA256.new(message.encode()), signed)
+            return True
+        except ValueError:
+            return False
 
 class DSA:
     def __init__(self, key_size: int = 2048):
@@ -68,7 +72,8 @@ class DSA:
 
         :param key_size: Tamanho da chave DSA em bits.
         """
-        pass
+        self.private_key = CryptoDSA.generate(key_size)
+        self.public_key = self.private_key.public_key()
 
     def sign_message(self, message: str) -> str:
         """
@@ -77,7 +82,9 @@ class DSA:
         :param message: A mensagem em texto simples a ser assinada.
         :return: Assinatura da mensagem codificada em base64.
         """
-        pass
+        msg_hash = SHA256.new(message.encode())
+        signed = DSS.new(self.private_key, 'fips-186-3').sign(msg_hash)
+        return b64encode(signed).decode()
 
     def verify_signature(self, message: str, signature: str, public_key: CryptoDSA) -> bool:
         """
@@ -88,7 +95,14 @@ class DSA:
         :param public_key: A chave pública DSA do remetente.
         :return: True se a assinatura for válida, False caso contrário.
         """
-        pass
+        msg_hash = SHA256.new(message.encode())
+        signed = b64decode(signature)
+        try:
+            DSS.new(public_key, 'fips-186-3').verify(msg_hash, signed)
+            return True
+        except ValueError:
+            return False
+
 
 class ECDSA:
     def __init__(self, curve: str = 'P-256'):
