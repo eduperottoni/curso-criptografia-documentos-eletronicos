@@ -3,7 +3,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.x509.oid import NameOID
-from datetime import datetime, timedelta
+from datetime import timedelta
+import datetime
 import random
 
 
@@ -18,7 +19,7 @@ class AC:
         """
         Obtém tempos de validade do certificado
         """
-        not_before = datetime.utcnow()
+        not_before = datetime.datetime.now(datetime.timezone.utc)
         not_after = not_before + timedelta(days=365)
         return (not_before, not_after)
 
@@ -101,6 +102,20 @@ class AC:
             CryptoRSA.RsaKey or None: A chave publica do certificado, ou None se o certificado não for valido.
         """
         certificate: x509.Certificate = cert
-        if certificate.not_valid_before < datetime.now():
+        if cert.not_valid_after_utc < datetime.datetime.now(datetime.timezone.utc):
+            print("Certificado fora do período de validade.")
             return None
-        return certificate.public_key
+
+        try:
+            self.ca_certificate.public_key().verify(
+                cert.signature,
+                cert.tbs_certificate_bytes,
+                padding.PKCS1v15(),
+                cert.signature_hash_algorithm
+            )
+            print("Certificado válido.")
+        except Exception as e:
+            print(f"Erro na validação do certificado: {e}")
+            return None
+
+        return cert.public_key()
